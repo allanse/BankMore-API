@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  account.api:
+    build:
+      context: .
+      dockerfile: src/Account/Account.API/Dockerfile
+    ports:
+      - "8081:8080" # Mapeia a porta 8080 do container para 8081 na sua máquina
+    volumes:
+      - ./database:/app/data # Volume para persistir o banco de dados SQLite
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/account.db
+
+volumes:
+  database:
