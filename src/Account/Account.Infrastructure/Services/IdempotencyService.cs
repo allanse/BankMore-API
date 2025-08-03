@@ -21,8 +21,7 @@ public class IdempotencyService : IIdempotencyService
 
         return await connection.QuerySingleOrDefaultAsync<string>(sql, new { RequestId = requestId.ToString() });
     }
-
-    // Assinatura ATUALIZADA
+    
     public async Task StoreResponseAsync(Guid requestId, object request, int httpStatusCode, object response)
     {
         using var connection = await _dbConnectionFactory.CreateConnectionAsync();

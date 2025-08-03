@@ -18,9 +18,6 @@ public class CurrentAccount
 
     public static CurrentAccount Create(string nome, string cpf, string senhaHash)
     {
-        // Aqui podemos adicionar validações de domínio, se necessário.
-        // Por exemplo, ownerName não pode ser nulo, etc.
-
         return new CurrentAccount
         {
             IdContaCorrente = Guid.NewGuid(),

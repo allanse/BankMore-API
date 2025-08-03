@@ -44,8 +44,7 @@ public class CurrentAccountRepository : ICurrentAccountRepository
     public async Task<CurrentAccount?> GetByCpfOrAccountNumberAsync(string cpfOrAccountNumber)
     {
         using var connection = await _dbConnectionFactory.CreateConnectionAsync();
-
-        // Tentamos converter o input para um número. Se funcionar, buscamos pelo número da conta.
+        
         var isNumber = int.TryParse(cpfOrAccountNumber, out var accountNumber);
 
         var sql = isNumber
