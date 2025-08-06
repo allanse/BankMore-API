@@ -1,4 +1,6 @@
 using Dapper;
+using KafkaFlow;
+using KafkaFlow.Serializer;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -13,11 +15,9 @@ using Transfers.Infrastructure.Data.TypeHandlers;
 using Transfers.Infrastructure.Persistence;
 using Transfers.Infrastructure.Services;
 
-
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
@@ -26,11 +26,10 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITransferRepository, TransferRepository>();
 builder.Services.AddScoped<IIdempotencyService, IdempotencyService>();
-
+builder.Services.AddScoped<IMessagePublisher, KafkaMessagePublisher>();
 
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddSingleton<DatabaseInitializer>();
-
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(InitiateTransferCommand).Assembly));
@@ -85,8 +84,24 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddKafka(kafka => kafka
+    .UseConsoleLog()
+    .AddCluster(cluster => cluster
+        .WithBrokers(new[] { builder.Configuration["Kafka:BootstrapServers"] })
+        .CreateTopicIfNotExists("transfer-initiated-topic", 1, 1)
+        .AddProducer(
+            "transfer-producer",
+            producer => producer
+                .DefaultTopic("transfer-initiated-topic")
+                .AddMiddlewares(m => m.AddSerializer<JsonCoreSerializer>())
+        )
+    )
+);
 
 var app = builder.Build();
+
+var kafkaBus = app.Services.CreateKafkaBus();
+await kafkaBus.StartAsync();
 
 if (app.Environment.IsDevelopment())
 {

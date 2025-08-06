@@ -1,9 +1,30 @@
+version: '3.8'
+
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on: [zookeeper]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181      
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
   redis:
-      image: redis:alpine
-      ports:
-        - "6379:6379"
-        
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
   account.api:
     build:
       context: .
@@ -16,12 +37,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/account.db
-      - JwtSettings__Secret=${JWT_SECRET}
       - ConnectionStrings__Redis=redis:6379
+      - Kafka__BootstrapServers=kafka:29092
     depends_on:
       - redis
-      
-  transfers.api: 
+      - kafka
+
+  transfers.api:
     build:
       context: .
       dockerfile: src/Transfers/Transfers.API/Dockerfile
@@ -34,9 +56,20 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/transfers.db
       - ServiceSettings__AccountApiUrl=http://account.api:8080
+      - Kafka__BootstrapServers=kafka:29092
       - JwtSettings__Secret=${JWT_SECRET}
       - JwtSettings__Issuer=BankMore.API
       - JwtSettings__Audience=BankMore.Clients
+    depends_on:
+      - kafka
+      
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    depends_on: [kafka]
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092"
 
 volumes:
   database:
