@@ -14,7 +14,8 @@ public class InitiateTransferCommandHandler : IRequestHandler<InitiateTransferCo
         IMessagePublisher producer,
         ICurrentUserService currentUserService)
     {        
-        _currentUserService = currentUserService;                
+        _currentUserService = currentUserService;
+        _producer = producer;
     }
 
     public async Task<Unit> Handle(InitiateTransferCommand request, CancellationToken cancellationToken)
