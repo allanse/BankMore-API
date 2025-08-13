@@ -1,4 +1,3 @@
-using Account.API.Consumers;
 using Account.API.Services;
 using Account.Application.Behaviors;
 using Account.Application.Contracts;
@@ -17,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Transfers.Application.Features.Transfers.Commands.InitiateTransfer;
 
 public partial class Program {
     private static async Task Main(string[] args)
@@ -46,7 +46,7 @@ public partial class Program {
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-        builder.Services.AddScoped<IIdempotencyService, IdempotencyService>();
+        builder.Services.AddScoped<IIdempotencyService, IdempotencyService>();        
 
         builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
         builder.Services.AddSingleton<DatabaseInitializer>();
@@ -113,7 +113,13 @@ public partial class Program {
                         .AddDeserializer<JsonCoreDeserializer>()
                         .AddTypedHandlers(h => h
                         .WithHandlerLifetime(InstanceLifetime.Scoped)
-                        .AddHandler<TransferConsumerHandler>())
+                        .AddHandler<TransferConsumerHandler>()
+                        .WhenNoHandlerFound(context =>
+                            Console.WriteLine("Message not handled > Partition: {0} | Offset: {1}",
+                            context.ConsumerContext.Partition,
+                            context.ConsumerContext.Offset)
+                        ))
+
                     )
                 )
             )
@@ -122,7 +128,7 @@ public partial class Program {
         var app = builder.Build();
 
         var kafkaBus = app.Services.CreateKafkaBus();
-        kafkaBus.StartAsync();
+        await kafkaBus.StartAsync();
 
         if (app.Environment.IsDevelopment())
         {
@@ -148,7 +154,7 @@ public partial class Program {
             Console.WriteLine($"An error occurred during database initialization: {ex.Message}");
         }
 
-        app.Run();
+        await app.RunAsync();
     }
 }
 

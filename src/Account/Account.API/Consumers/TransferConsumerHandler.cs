@@ -2,7 +2,8 @@
 using Account.Domain;
 using KafkaFlow;
 
-namespace Account.API.Consumers;
+namespace Transfers.Application.Features.Transfers.Commands.InitiateTransfer;
+//namespace Account.API.Consumers;
 
 public class TransferenciaIniciadaEvent
 {
