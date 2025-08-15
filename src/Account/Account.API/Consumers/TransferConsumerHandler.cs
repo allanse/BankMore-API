@@ -1,17 +1,9 @@
 ﻿using Account.Application.Contracts;
 using Account.Domain;
+using BankMore.Common.Messaging.Events;
 using KafkaFlow;
 
-namespace Transfers.Application.Features.Transfers.Commands.InitiateTransfer;
-//namespace Account.API.Consumers;
-
-public class TransferenciaIniciadaEvent
-{
-    public Guid IdRequisicao { get; set; }
-    public Guid IdContaOrigem { get; set; }
-    public int NumeroContaDestino { get; set; }
-    public decimal Valor { get; set; }
-}
+namespace Account.API.Consumers;
 
 public class TransferConsumerHandler : IMessageHandler<TransferenciaIniciadaEvent>
 {

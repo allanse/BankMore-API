@@ -16,6 +16,8 @@ COPY src/Transfers/Transfers.Infrastructure/*.csproj ./src/Transfers/Transfers.I
 COPY tests/Account.API.IntegrationTests/*.csproj ./tests/Account.API.IntegrationTests/
 COPY tests/Account.Application.UnitTests/*.csproj ./tests/Account.Application.UnitTests/
 
+COPY src/Common/BankMore.Common.csproj ./src/Common/
+
 RUN dotnet restore BankMore.sln
 
 COPY . .

@@ -1,3 +1,4 @@
+using Account.API.Consumers;
 using Account.API.Services;
 using Account.Application.Behaviors;
 using Account.Application.Contracts;
@@ -16,7 +17,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Transfers.Application.Features.Transfers.Commands.InitiateTransfer;
 
 public partial class Program {
     private static async Task Main(string[] args)

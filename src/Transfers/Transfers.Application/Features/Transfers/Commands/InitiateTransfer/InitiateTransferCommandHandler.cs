@@ -1,7 +1,7 @@
-﻿using MediatR;
+﻿using BankMore.Common.Messaging.Events;
+using MediatR;
 using Transfers.Application.Contracts;
 using Transfers.Application.Exceptions;
-using Transfers.Domain;
 
 namespace Transfers.Application.Features.Transfers.Commands.InitiateTransfer;
 
@@ -39,11 +39,4 @@ public class InitiateTransferCommandHandler : IRequestHandler<InitiateTransferCo
 
         return Unit.Value;
     }
-}
-public class TransferenciaIniciadaEvent
-{
-    public Guid IdRequisicao { get; set; }
-    public Guid IdContaOrigem { get; set; }
-    public int NumeroContaDestino { get; set; }
-    public decimal Valor { get; set; }
 }
